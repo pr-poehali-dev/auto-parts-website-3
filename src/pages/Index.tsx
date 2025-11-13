@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +9,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Product {
   id: number;
@@ -25,20 +27,32 @@ interface CartItem extends Product {
 }
 
 const Index = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedBrand, setSelectedBrand] = useState('all');
   const [selectedModel, setSelectedModel] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [products, setProducts] = useState<Product[]>([]);
 
-  const products: Product[] = [
-    { id: 1, name: 'Тормозные колодки', category: 'brakes', price: 3500, image: 'https://cdn.poehali.dev/projects/c83f47bd-a908-4a14-9fde-752a62506983/files/3e49715f-e2c0-4381-b926-8f27dba2e7d3.jpg', brand: 'Brembo', stock: true, discount: 15 },
-    { id: 2, name: 'Масляный фильтр', category: 'filters', price: 450, image: 'https://cdn.poehali.dev/projects/c83f47bd-a908-4a14-9fde-752a62506983/files/da726a92-fe29-4088-a9f0-19e7f87232c6.jpg', brand: 'Mann', stock: true },
-    { id: 3, name: 'Комплект двигателя', category: 'engine', price: 25000, image: 'https://cdn.poehali.dev/projects/c83f47bd-a908-4a14-9fde-752a62506983/files/0a7b622b-0ffc-4240-881b-95d78761629d.jpg', brand: 'Bosch', stock: true, discount: 20 },
-    { id: 4, name: 'Воздушный фильтр', category: 'filters', price: 550, image: 'https://cdn.poehali.dev/projects/c83f47bd-a908-4a14-9fde-752a62506983/files/da726a92-fe29-4088-a9f0-19e7f87232c6.jpg', brand: 'Mann', stock: true },
-    { id: 5, name: 'Тормозные диски', category: 'brakes', price: 5200, image: 'https://cdn.poehali.dev/projects/c83f47bd-a908-4a14-9fde-752a62506983/files/3e49715f-e2c0-4381-b926-8f27dba2e7d3.jpg', brand: 'Brembo', stock: true },
-    { id: 6, name: 'Свечи зажигания', category: 'engine', price: 800, image: 'https://cdn.poehali.dev/projects/c83f47bd-a908-4a14-9fde-752a62506983/files/0a7b622b-0ffc-4240-881b-95d78761629d.jpg', brand: 'NGK', stock: false },
-  ];
+  useEffect(() => {
+    const savedProducts = localStorage.getItem('products');
+    if (savedProducts) {
+      setProducts(JSON.parse(savedProducts));
+    } else {
+      const initialProducts: Product[] = [
+        { id: 1, name: 'Тормозные колодки', category: 'brakes', price: 3500, image: 'https://cdn.poehali.dev/projects/c83f47bd-a908-4a14-9fde-752a62506983/files/3e49715f-e2c0-4381-b926-8f27dba2e7d3.jpg', brand: 'Brembo', stock: true, discount: 15 },
+        { id: 2, name: 'Масляный фильтр', category: 'filters', price: 450, image: 'https://cdn.poehali.dev/projects/c83f47bd-a908-4a14-9fde-752a62506983/files/da726a92-fe29-4088-a9f0-19e7f87232c6.jpg', brand: 'Mann', stock: true },
+        { id: 3, name: 'Комплект двигателя', category: 'engine', price: 25000, image: 'https://cdn.poehali.dev/projects/c83f47bd-a908-4a14-9fde-752a62506983/files/0a7b622b-0ffc-4240-881b-95d78761629d.jpg', brand: 'Bosch', stock: true, discount: 20 },
+        { id: 4, name: 'Воздушный фильтр', category: 'filters', price: 550, image: 'https://cdn.poehali.dev/projects/c83f47bd-a908-4a14-9fde-752a62506983/files/da726a92-fe29-4088-a9f0-19e7f87232c6.jpg', brand: 'Mann', stock: true },
+        { id: 5, name: 'Тормозные диски', category: 'brakes', price: 5200, image: 'https://cdn.poehali.dev/projects/c83f47bd-a908-4a14-9fde-752a62506983/files/3e49715f-e2c0-4381-b926-8f27dba2e7d3.jpg', brand: 'Brembo', stock: true },
+        { id: 6, name: 'Свечи зажигания', category: 'engine', price: 800, image: 'https://cdn.poehali.dev/projects/c83f47bd-a908-4a14-9fde-752a62506983/files/0a7b622b-0ffc-4240-881b-95d78761629d.jpg', brand: 'NGK', stock: false },
+      ];
+      setProducts(initialProducts);
+      localStorage.setItem('products', JSON.stringify(initialProducts));
+    }
+  }, []);
 
   const categories = [
     { id: 'all', name: 'Все категории', icon: 'Grid3x3' },
@@ -104,6 +118,19 @@ const Index = () => {
               <a href="#delivery" className="text-muted-foreground hover:text-primary transition-colors">Доставка</a>
               <a href="#contacts" className="text-muted-foreground hover:text-primary transition-colors">Контакты</a>
             </nav>
+            <div className="flex items-center gap-2">
+              {user ? (
+                <Button variant="ghost" onClick={() => navigate('/profile')}>
+                  <Icon name="User" className="mr-2 w-4 h-4" />
+                  {user.name}
+                </Button>
+              ) : (
+                <Button variant="ghost" onClick={() => navigate('/login')}>
+                  <Icon name="LogIn" className="mr-2 w-4 h-4" />
+                  Вход
+                </Button>
+              )}
+            </div>
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="outline" size="icon" className="relative">
